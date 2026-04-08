@@ -19,6 +19,7 @@
     <description>Типа микросервисное приложение "Банк"</description>
 
     <modules>
+        <module>gateway-service</module>
         <module>front-ui</module>
     </modules>
 
