@@ -19,8 +19,15 @@
     <description>Типа микросервисное приложение "Банк"</description>
 
     <modules>
+        <module>bank-common</module>
+        <module>discovery-server</module>
+        <module>config-server</module>
         <module>gateway-service</module>
         <module>front-ui</module>
+        <module>accounts-service</module>
+        <module>cash-service</module>
+        <module>transfer-service</module>
+        <module>notifications-service</module>
     </modules>
 
     <properties>
