@@ -16,7 +16,7 @@
     <dependencies>
         <dependency>
             <groupId>ru.yandex.practicum</groupId>
-            <artifactId>bank-common</artifactId>
+            <artifactId>bank-common-security</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

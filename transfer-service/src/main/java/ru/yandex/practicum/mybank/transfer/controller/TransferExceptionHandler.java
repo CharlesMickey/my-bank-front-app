@@ -7,9 +7,9 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.mybank.transfer.error.BankException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import ru.yandex.practicum.mybank.common.dto.ApiError;
-import ru.yandex.practicum.mybank.common.error.BankException;
 
 import java.io.IOException;
 import java.util.List;

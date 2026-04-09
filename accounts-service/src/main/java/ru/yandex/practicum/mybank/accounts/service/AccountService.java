@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.mybank.accounts.client.NotificationClient;
+import ru.yandex.practicum.mybank.accounts.error.BankException;
 import ru.yandex.practicum.mybank.accounts.model.Account;
 import ru.yandex.practicum.mybank.accounts.repository.AccountRepository;
 import ru.yandex.practicum.mybank.common.dto.AccountDetailsDto;
@@ -11,7 +12,6 @@ import ru.yandex.practicum.mybank.common.dto.AccountDto;
 import ru.yandex.practicum.mybank.common.dto.AccountUpdateRequest;
 import ru.yandex.practicum.mybank.common.dto.InternalCashRequest;
 import ru.yandex.practicum.mybank.common.dto.NotificationRequest;
-import ru.yandex.practicum.mybank.common.error.BankException;
 
 import java.time.LocalDate;
 import java.util.List;

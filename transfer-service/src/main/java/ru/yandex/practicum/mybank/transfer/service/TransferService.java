@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.mybank.common.dto.NotificationRequest;
 import ru.yandex.practicum.mybank.common.dto.OperationResultDto;
 import ru.yandex.practicum.mybank.common.dto.TransferRequest;
-import ru.yandex.practicum.mybank.common.error.BankException;
 import ru.yandex.practicum.mybank.transfer.client.AccountsClient;
 import ru.yandex.practicum.mybank.transfer.client.NotificationClient;
+import ru.yandex.practicum.mybank.transfer.error.BankException;
 
 @Service
 public class TransferService {

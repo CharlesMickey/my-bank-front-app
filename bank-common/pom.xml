@@ -10,25 +10,8 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>bank-common</artifactId>
-    <name>bank-common</name>
-
-    <dependencies>
-        <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-oauth2-resource-server</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-oauth2-jose</artifactId>
-        </dependency>
-    </dependencies>
+    <artifactId>bank-common-legacy</artifactId>
+    <packaging>pom</packaging>
+    <name>bank-common-legacy</name>
+    <description>Deprecated placeholder. Active shared modules are bank-common-dto, bank-common-security and bank-common-oauth2-client.</description>
 </project>

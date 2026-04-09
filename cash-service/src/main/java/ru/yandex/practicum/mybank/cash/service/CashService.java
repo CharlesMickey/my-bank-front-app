@@ -4,11 +4,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.mybank.cash.client.AccountsClient;
 import ru.yandex.practicum.mybank.cash.client.NotificationClient;
+import ru.yandex.practicum.mybank.cash.error.BankException;
 import ru.yandex.practicum.mybank.common.dto.CashAction;
 import ru.yandex.practicum.mybank.common.dto.CashRequest;
 import ru.yandex.practicum.mybank.common.dto.NotificationRequest;
 import ru.yandex.practicum.mybank.common.dto.OperationResultDto;
-import ru.yandex.practicum.mybank.common.error.BankException;
 
 @Service
 public class CashService {
