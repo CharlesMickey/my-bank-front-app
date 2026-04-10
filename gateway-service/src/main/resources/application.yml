@@ -1,0 +1,79 @@
+server:
+  port: ${SERVER_PORT:8090}
+
+spring:
+  application:
+    name: gateway-service
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: accounts-service
+          uri: lb://ACCOUNTS-SERVICE
+          predicates:
+            - Path=/api/accounts/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: accounts
+        - id: cash-service
+          uri: lb://CASH-SERVICE
+          predicates:
+            - Path=/api/cash/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: cash
+        - id: transfer-service
+          uri: lb://TRANSFER-SERVICE
+          predicates:
+            - Path=/api/transfers/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: transfer
+        - id: notifications-service
+          uri: lb://NOTIFICATIONS-SERVICE
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: notifications
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${BANK_JWK_SET_URI:http://localhost:9090/realms/my-bank/protocol/openid-connect/certs}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      accounts:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+      cash:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+      transfer:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+      notifications:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

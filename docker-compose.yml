@@ -1,0 +1,186 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: my-bank-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bank
+      POSTGRES_USER: bank
+      POSTGRES_PASSWORD: bank
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bank -d bank"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: my-bank-keycloak
+    restart: unless-stopped
+    command: ["start-dev", "--import-realm", "--http-port=9090"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./keycloak/my-bank-realm.json:/opt/keycloak/data/import/my-bank-realm.json:ro
+
+  discovery-server:
+    build:
+      context: .
+      dockerfile: discovery-server/Dockerfile
+    container_name: my-bank-discovery
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+
+  config-server:
+    build:
+      context: .
+      dockerfile: config-server/Dockerfile
+    container_name: my-bank-config
+    restart: unless-stopped
+    environment:
+      EUREKA_DEFAULT_ZONE: http://discovery-server:8761/eureka/
+    ports:
+      - "8888:8888"
+    depends_on:
+      - discovery-server
+
+  gateway-service:
+    build:
+      context: .
+      dockerfile: gateway-service/Dockerfile
+    container_name: my-bank-gateway
+    restart: unless-stopped
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_DEFAULT_ZONE: http://discovery-server:8761/eureka/
+      BANK_JWK_SET_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/certs
+    ports:
+      - "8090:8090"
+    depends_on:
+      - config-server
+      - discovery-server
+      - keycloak
+
+  front-ui:
+    build:
+      context: .
+      dockerfile: front-ui/Dockerfile
+    container_name: my-bank-front
+    restart: unless-stopped
+    environment:
+      BANK_GATEWAY_URL: http://gateway-service:8090
+      BANK_AUTHORIZATION_URI: http://localhost:9090/realms/my-bank/protocol/openid-connect/auth
+      BANK_TOKEN_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/token
+      BANK_USER_INFO_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/userinfo
+      BANK_JWK_SET_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/certs
+      BANK_LOGOUT_URI: http://localhost:9090/realms/my-bank/protocol/openid-connect/logout
+      FRONT_CLIENT_ID: front-ui
+      FRONT_CLIENT_SECRET: front-secret
+    ports:
+      - "8080:8080"
+    depends_on:
+      - gateway-service
+      - keycloak
+
+  accounts-service:
+    build:
+      context: .
+      dockerfile: accounts-service/Dockerfile
+    container_name: my-bank-accounts
+    restart: unless-stopped
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_DEFAULT_ZONE: http://discovery-server:8761/eureka/
+      BANK_JWK_SET_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/certs
+      BANK_TOKEN_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/token
+      ACCOUNTS_DB_URL: jdbc:postgresql://postgres:5432/bank
+      ACCOUNTS_DB_USER: bank
+      ACCOUNTS_DB_PASSWORD: bank
+      ACCOUNTS_CLIENT_ID: accounts-service
+      ACCOUNTS_CLIENT_SECRET: accounts-secret
+    depends_on:
+      postgres:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+      discovery-server:
+        condition: service_started
+      keycloak:
+        condition: service_started
+
+  cash-service:
+    build:
+      context: .
+      dockerfile: cash-service/Dockerfile
+    container_name: my-bank-cash
+    restart: unless-stopped
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_DEFAULT_ZONE: http://discovery-server:8761/eureka/
+      BANK_JWK_SET_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/certs
+      BANK_TOKEN_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/token
+      CASH_CLIENT_ID: cash-service
+      CASH_CLIENT_SECRET: cash-secret
+    depends_on:
+      - accounts-service
+      - notifications-service
+      - config-server
+      - discovery-server
+      - keycloak
+
+  transfer-service:
+    build:
+      context: .
+      dockerfile: transfer-service/Dockerfile
+    container_name: my-bank-transfer
+    restart: unless-stopped
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_DEFAULT_ZONE: http://discovery-server:8761/eureka/
+      BANK_JWK_SET_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/certs
+      BANK_TOKEN_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/token
+      TRANSFER_CLIENT_ID: transfer-service
+      TRANSFER_CLIENT_SECRET: transfer-secret
+    depends_on:
+      - accounts-service
+      - notifications-service
+      - config-server
+      - discovery-server
+      - keycloak
+
+  notifications-service:
+    build:
+      context: .
+      dockerfile: notifications-service/Dockerfile
+    container_name: my-bank-notifications
+    restart: unless-stopped
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_DEFAULT_ZONE: http://discovery-server:8761/eureka/
+      BANK_JWK_SET_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/certs
+      NOTIFICATIONS_DB_URL: jdbc:postgresql://postgres:5432/bank
+      NOTIFICATIONS_DB_USER: bank
+      NOTIFICATIONS_DB_PASSWORD: bank
+    depends_on:
+      postgres:
+        condition: service_healthy
+      config-server:
+        condition: service_started
+      discovery-server:
+        condition: service_started
+      keycloak:
+        condition: service_started
+
+volumes:
+  postgres-data:

@@ -1,0 +1,37 @@
+server:
+  port: ${SERVER_PORT:8084}
+
+spring:
+  application:
+    name: notifications-service
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+  datasource:
+    url: ${NOTIFICATIONS_DB_URL:jdbc:postgresql://localhost:5432/bank}
+    username: ${NOTIFICATIONS_DB_USER:bank}
+    password: ${NOTIFICATIONS_DB_PASSWORD:bank}
+  flyway:
+    schemas: notifications
+    default-schema: notifications
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: notifications
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${BANK_JWK_SET_URI:http://localhost:9090/realms/my-bank/protocol/openid-connect/certs}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
