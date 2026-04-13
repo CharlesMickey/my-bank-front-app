@@ -1,8 +1,12 @@
 package ru.yandex.practicum.mybank.cash.client;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import ru.yandex.practicum.mybank.cash.error.BankException;
 import ru.yandex.practicum.mybank.common.dto.AccountDetailsDto;
 import ru.yandex.practicum.mybank.common.dto.InternalCashRequest;
 
@@ -23,10 +27,12 @@ public class AccountsClient {
         this.accountsUrl = normalizeUrl(accountsUrl);
     }
 
+    @CircuitBreaker(name = "accounts", fallbackMethod = "fallback")
     public AccountDetailsDto deposit(String login, long value) {
         return call(login, "deposit", value);
     }
 
+    @CircuitBreaker(name = "accounts", fallbackMethod = "fallback")
     public AccountDetailsDto withdraw(String login, long value) {
         return call(login, "withdraw", value);
     }
@@ -38,6 +44,13 @@ public class AccountsClient {
                 .retrieve()
                 .bodyToMono(AccountDetailsDto.class)
                 .block(REQUEST_TIMEOUT);
+    }
+
+    private AccountDetailsDto fallback(String login, long value, Throwable error) {
+        if (error instanceof WebClientResponseException responseException) {
+            throw responseException;
+        }
+        throw new BankException(HttpStatus.SERVICE_UNAVAILABLE, "Accounts service is temporarily unavailable");
     }
 
     private String normalizeUrl(String url) {

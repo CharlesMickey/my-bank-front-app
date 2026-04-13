@@ -23,6 +23,9 @@ spring:
 resilience4j:
   circuitbreaker:
     instances:
+      accounts:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
       notifications:
         sliding-window-size: 5
         failure-rate-threshold: 50

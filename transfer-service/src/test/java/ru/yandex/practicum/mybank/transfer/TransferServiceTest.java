@@ -23,21 +23,18 @@ import static org.mockito.Mockito.when;
 class TransferServiceTest {
 
     @Test
-    void transferWithdrawsFromSenderAndDepositsToRecipient() {
+    void transferDelegatesAtomicTransferToAccountsService() {
         AccountsClient accountsClient = mock(AccountsClient.class);
         NotificationClient notificationClient = mock(NotificationClient.class);
-        when(accountsClient.withdraw("demo", 25))
-                .thenReturn(new AccountDetailsDto("demo", "Иванов Иван", LocalDate.of(2001, 1, 1), 75));
-        when(accountsClient.deposit("petrov", 25))
-                .thenReturn(new AccountDetailsDto("petrov", "Петров Пётр", LocalDate.of(1997, 5, 20), 275));
+        when(accountsClient.transfer("demo", "petrov", 25))
+                .thenReturn(new AccountDetailsDto("demo", "Ivan Ivanov", LocalDate.of(2001, 1, 1), 75));
         TransferService service = new TransferService(accountsClient, notificationClient);
 
         var result = service.transfer("demo", new TransferRequest("petrov", 25));
         ArgumentCaptor<NotificationRequest> notificationCaptor = ArgumentCaptor.forClass(NotificationRequest.class);
 
-        assertThat(result.message()).contains("25 руб.").contains("petrov");
-        verify(accountsClient).withdraw("demo", 25);
-        verify(accountsClient).deposit("petrov", 25);
+        assertThat(result.message()).contains("25").contains("petrov");
+        verify(accountsClient).transfer("demo", "petrov", 25);
         verify(notificationClient, times(2)).notify(notificationCaptor.capture());
         assertThat(notificationCaptor.getAllValues())
                 .extracting(NotificationRequest::type)
@@ -45,23 +42,17 @@ class TransferServiceTest {
     }
 
     @Test
-    void transferRollsBackWhenDepositToRecipientFails() {
+    void transferDoesNotSendNotificationsWhenAccountsServiceFails() {
         AccountsClient accountsClient = mock(AccountsClient.class);
         NotificationClient notificationClient = mock(NotificationClient.class);
-        RuntimeException failure = new RuntimeException("recipient deposit failed");
-        when(accountsClient.withdraw("demo", 25))
-                .thenReturn(new AccountDetailsDto("demo", "Иванов Иван", LocalDate.of(2001, 1, 1), 75));
-        when(accountsClient.deposit("petrov", 25)).thenThrow(failure);
-        when(accountsClient.deposit("demo", 25))
-                .thenReturn(new AccountDetailsDto("demo", "Иванов Иван", LocalDate.of(2001, 1, 1), 100));
+        RuntimeException failure = new RuntimeException("transfer failed");
+        when(accountsClient.transfer("demo", "petrov", 25)).thenThrow(failure);
         TransferService service = new TransferService(accountsClient, notificationClient);
 
         assertThatThrownBy(() -> service.transfer("demo", new TransferRequest("petrov", 25)))
                 .isSameAs(failure);
 
-        verify(accountsClient).withdraw("demo", 25);
-        verify(accountsClient).deposit("petrov", 25);
-        verify(accountsClient).deposit("demo", 25);
+        verify(accountsClient).transfer("demo", "petrov", 25);
         verify(notificationClient, never()).notify(any());
     }
 }

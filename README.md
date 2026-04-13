@@ -1,4 +1,4 @@
-﻿# My Bank App
+# My Bank App
 
 Микросервисное приложение «Банк Бабанк» для проектной работы десятого спринта. Проект собран как Maven multi-module на Java 21, Spring Boot и Spring Cloud. Для развёртывания в Kubernetes используется зонтичный Helm-чарт с сабчартами для микросервисов, PostgreSQL и Keycloak.
 
@@ -26,8 +26,6 @@
 | `bank-common-dto` | Общие DTO | - |
 | `bank-common-security` | Общая security-логика | - |
 | `bank-common-oauth2-client` | Общая OAuth2 client-конфигурация | - |
-
-`discovery-server` и `config-server` сохранены в репозитории как наследие девятого спринта, но не входят в активную Maven-сборку и не используются в Kubernetes-развёртывании.
 
 ## Kubernetes и Helm
 

@@ -1,10 +1,14 @@
 package ru.yandex.practicum.mybank.transfer.client;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import ru.yandex.practicum.mybank.common.dto.AccountDetailsDto;
-import ru.yandex.practicum.mybank.common.dto.InternalCashRequest;
+import ru.yandex.practicum.mybank.common.dto.InternalTransferRequest;
+import ru.yandex.practicum.mybank.transfer.error.BankException;
 
 import java.time.Duration;
 
@@ -23,21 +27,21 @@ public class AccountsClient {
         this.accountsUrl = normalizeUrl(accountsUrl);
     }
 
-    public AccountDetailsDto deposit(String login, long value) {
-        return call(login, "deposit", value);
-    }
-
-    public AccountDetailsDto withdraw(String login, long value) {
-        return call(login, "withdraw", value);
-    }
-
-    private AccountDetailsDto call(String login, String action, long value) {
+    @CircuitBreaker(name = "accounts", fallbackMethod = "fallback")
+    public AccountDetailsDto transfer(String login, String recipientLogin, long value) {
         return webClient.post()
-                .uri(accountsUrl + "/api/internal/accounts/{login}/{action}", login, action)
-                .bodyValue(new InternalCashRequest(value))
+                .uri(accountsUrl + "/api/internal/accounts/{login}/transfer", login)
+                .bodyValue(new InternalTransferRequest(recipientLogin, value))
                 .retrieve()
                 .bodyToMono(AccountDetailsDto.class)
                 .block(REQUEST_TIMEOUT);
+    }
+
+    private AccountDetailsDto fallback(String login, String recipientLogin, long value, Throwable error) {
+        if (error instanceof WebClientResponseException responseException) {
+            throw responseException;
+        }
+        throw new BankException(HttpStatus.SERVICE_UNAVAILABLE, "Accounts service is temporarily unavailable");
     }
 
     private String normalizeUrl(String url) {
