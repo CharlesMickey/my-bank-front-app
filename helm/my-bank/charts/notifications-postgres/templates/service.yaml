@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: notifications-postgres
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: notifications-postgres
+  ports:
+    - name: postgres
+      port: {{ .Values.service.port }}
+      targetPort: postgres

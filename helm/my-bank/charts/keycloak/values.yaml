@@ -1,0 +1,20 @@
+replicaCount: 1
+
+image:
+  repository: quay.io/keycloak/keycloak
+  tag: "26.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 8080
+  nodePort: 30090
+
+config:
+  adminUsername: "admin"
+  healthEnabled: "true"
+  httpEnabled: "true"
+  hostnameStrict: "false"
+
+secret:
+  adminPassword: "admin"

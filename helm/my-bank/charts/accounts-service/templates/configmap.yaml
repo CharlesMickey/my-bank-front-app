@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: accounts-service-config
+data:
+  SERVER_PORT: {{ .Values.config.serverPort | quote }}
+  ACCOUNTS_DB_URL: {{ .Values.config.dbUrl | quote }}
+  ACCOUNTS_DB_USER: {{ .Values.config.dbUser | quote }}
+  BANK_JWK_SET_URI: {{ .Values.config.jwkSetUri | quote }}
+  BANK_TOKEN_URI: {{ .Values.config.tokenUri | quote }}
+  BANK_NOTIFICATIONS_URL: {{ .Values.config.notificationsUrl | quote }}
+  ACCOUNTS_CLIENT_ID: {{ .Values.config.clientId | quote }}

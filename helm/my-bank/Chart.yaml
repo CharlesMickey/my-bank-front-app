@@ -1,0 +1,31 @@
+apiVersion: v2
+name: my-bank
+description: Umbrella Helm chart for the My Bank microservices in Kubernetes.
+type: application
+version: 0.1.0
+appVersion: "0.0.1-SNAPSHOT"
+dependencies:
+  - name: accounts-postgres
+    version: 0.1.0
+    repository: file://charts/accounts-postgres
+  - name: notifications-postgres
+    version: 0.1.0
+    repository: file://charts/notifications-postgres
+  - name: keycloak
+    version: 0.1.0
+    repository: file://charts/keycloak
+  - name: notifications-service
+    version: 0.1.0
+    repository: file://charts/notifications-service
+  - name: accounts-service
+    version: 0.1.0
+    repository: file://charts/accounts-service
+  - name: cash-service
+    version: 0.1.0
+    repository: file://charts/cash-service
+  - name: transfer-service
+    version: 0.1.0
+    repository: file://charts/transfer-service
+  - name: gateway-service
+    version: 0.1.0
+    repository: file://charts/gateway-service

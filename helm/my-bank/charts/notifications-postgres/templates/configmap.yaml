@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notifications-postgres-config
+data:
+  POSTGRES_DB: {{ .Values.config.database | quote }}
+  POSTGRES_USER: {{ .Values.config.username | quote }}
+  PGDATA: {{ .Values.config.pgData | quote }}

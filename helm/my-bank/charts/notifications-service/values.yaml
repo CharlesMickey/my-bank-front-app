@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  repository: notifications-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8084
+
+config:
+  serverPort: "8084"
+  dbUrl: "jdbc:postgresql://notifications-postgres:5432/notifications"
+  dbUser: "notifications"
+  jwkSetUri: "http://keycloak:8080/realms/my-bank/protocol/openid-connect/certs"
+
+secret:
+  dbPassword: "notifications"

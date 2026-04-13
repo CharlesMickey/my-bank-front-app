@@ -1,0 +1,23 @@
+replicaCount: 1
+
+image:
+  repository: accounts-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8081
+
+config:
+  serverPort: "8081"
+  dbUrl: "jdbc:postgresql://accounts-postgres:5432/accounts"
+  dbUser: "accounts"
+  jwkSetUri: "http://keycloak:8080/realms/my-bank/protocol/openid-connect/certs"
+  tokenUri: "http://keycloak:8080/realms/my-bank/protocol/openid-connect/token"
+  notificationsUrl: "http://notifications-service:8084"
+  clientId: "accounts-service"
+
+secret:
+  dbPassword: "accounts"
+  clientSecret: "accounts-secret"

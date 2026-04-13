@@ -9,8 +9,6 @@ import ru.yandex.practicum.mybank.notifications.service.NotificationService;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = {
-        "spring.cloud.config.enabled=false",
-        "eureka.client.enabled=false",
         "spring.datasource.url=jdbc:h2:mem:notifications-test;MODE=PostgreSQL;DATABASE_TO_UPPER=false;INIT=CREATE SCHEMA IF NOT EXISTS notifications",
         "spring.datasource.username=sa",
         "spring.datasource.password=",

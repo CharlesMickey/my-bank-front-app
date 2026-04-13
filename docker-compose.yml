@@ -33,28 +33,6 @@ services:
     volumes:
       - ./keycloak/my-bank-realm.json:/opt/keycloak/data/import/my-bank-realm.json:ro
 
-  discovery-server:
-    build:
-      context: .
-      dockerfile: discovery-server/Dockerfile
-    container_name: my-bank-discovery
-    restart: unless-stopped
-    ports:
-      - "8761:8761"
-
-  config-server:
-    build:
-      context: .
-      dockerfile: config-server/Dockerfile
-    container_name: my-bank-config
-    restart: unless-stopped
-    environment:
-      EUREKA_DEFAULT_ZONE: http://discovery-server:8761/eureka/
-    ports:
-      - "8888:8888"
-    depends_on:
-      - discovery-server
-
   gateway-service:
     build:
       context: .
@@ -62,14 +40,18 @@ services:
     container_name: my-bank-gateway
     restart: unless-stopped
     environment:
-      CONFIG_SERVER_URL: http://config-server:8888
-      EUREKA_DEFAULT_ZONE: http://discovery-server:8761/eureka/
+      BANK_ACCOUNTS_URL: http://accounts-service:8081
+      BANK_CASH_URL: http://cash-service:8082
+      BANK_TRANSFER_URL: http://transfer-service:8083
+      BANK_NOTIFICATIONS_URL: http://notifications-service:8084
       BANK_JWK_SET_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/certs
     ports:
       - "8090:8090"
     depends_on:
-      - config-server
-      - discovery-server
+      - accounts-service
+      - cash-service
+      - transfer-service
+      - notifications-service
       - keycloak
 
   front-ui:
@@ -100,10 +82,9 @@ services:
     container_name: my-bank-accounts
     restart: unless-stopped
     environment:
-      CONFIG_SERVER_URL: http://config-server:8888
-      EUREKA_DEFAULT_ZONE: http://discovery-server:8761/eureka/
       BANK_JWK_SET_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/certs
       BANK_TOKEN_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/token
+      BANK_NOTIFICATIONS_URL: http://notifications-service:8084
       ACCOUNTS_DB_URL: jdbc:postgresql://postgres:5432/bank
       ACCOUNTS_DB_USER: bank
       ACCOUNTS_DB_PASSWORD: bank
@@ -112,10 +93,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      config-server:
-        condition: service_started
-      discovery-server:
-        condition: service_started
       keycloak:
         condition: service_started
 
@@ -126,8 +103,8 @@ services:
     container_name: my-bank-cash
     restart: unless-stopped
     environment:
-      CONFIG_SERVER_URL: http://config-server:8888
-      EUREKA_DEFAULT_ZONE: http://discovery-server:8761/eureka/
+      BANK_ACCOUNTS_URL: http://accounts-service:8081
+      BANK_NOTIFICATIONS_URL: http://notifications-service:8084
       BANK_JWK_SET_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/certs
       BANK_TOKEN_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/token
       CASH_CLIENT_ID: cash-service
@@ -135,8 +112,6 @@ services:
     depends_on:
       - accounts-service
       - notifications-service
-      - config-server
-      - discovery-server
       - keycloak
 
   transfer-service:
@@ -146,8 +121,8 @@ services:
     container_name: my-bank-transfer
     restart: unless-stopped
     environment:
-      CONFIG_SERVER_URL: http://config-server:8888
-      EUREKA_DEFAULT_ZONE: http://discovery-server:8761/eureka/
+      BANK_ACCOUNTS_URL: http://accounts-service:8081
+      BANK_NOTIFICATIONS_URL: http://notifications-service:8084
       BANK_JWK_SET_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/certs
       BANK_TOKEN_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/token
       TRANSFER_CLIENT_ID: transfer-service
@@ -155,8 +130,6 @@ services:
     depends_on:
       - accounts-service
       - notifications-service
-      - config-server
-      - discovery-server
       - keycloak
 
   notifications-service:
@@ -166,8 +139,6 @@ services:
     container_name: my-bank-notifications
     restart: unless-stopped
     environment:
-      CONFIG_SERVER_URL: http://config-server:8888
-      EUREKA_DEFAULT_ZONE: http://discovery-server:8761/eureka/
       BANK_JWK_SET_URI: http://keycloak:9090/realms/my-bank/protocol/openid-connect/certs
       NOTIFICATIONS_DB_URL: jdbc:postgresql://postgres:5432/bank
       NOTIFICATIONS_DB_USER: bank
@@ -175,10 +146,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      config-server:
-        condition: service_started
-      discovery-server:
-        condition: service_started
       keycloak:
         condition: service_started
 

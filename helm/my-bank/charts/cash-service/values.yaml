@@ -1,0 +1,21 @@
+replicaCount: 1
+
+image:
+  repository: cash-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8082
+
+config:
+  serverPort: "8082"
+  accountsUrl: "http://accounts-service:8081"
+  notificationsUrl: "http://notifications-service:8084"
+  jwkSetUri: "http://keycloak:8080/realms/my-bank/protocol/openid-connect/certs"
+  tokenUri: "http://keycloak:8080/realms/my-bank/protocol/openid-connect/token"
+  clientId: "cash-service"
+
+secret:
+  clientSecret: "cash-secret"

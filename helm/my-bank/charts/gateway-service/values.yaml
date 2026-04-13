@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  repository: gateway-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 8090
+  nodePort: 30080
+
+config:
+  serverPort: "8090"
+  accountsUrl: "http://accounts-service:8081"
+  cashUrl: "http://cash-service:8082"
+  transferUrl: "http://transfer-service:8083"
+  notificationsUrl: "http://notifications-service:8084"
+  jwkSetUri: "http://keycloak:8080/realms/my-bank/protocol/openid-connect/certs"
