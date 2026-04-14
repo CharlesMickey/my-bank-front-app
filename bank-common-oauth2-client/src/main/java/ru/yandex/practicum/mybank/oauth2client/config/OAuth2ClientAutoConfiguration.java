@@ -2,7 +2,6 @@ package ru.yandex.practicum.mybank.oauth2client.config;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
@@ -17,7 +16,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class OAuth2ClientAutoConfiguration {
 
     @Bean
-    @LoadBalanced
     @ConditionalOnMissingBean(name = "loadBalancedWebClientBuilder")
     WebClient.Builder loadBalancedWebClientBuilder() {
         return WebClient.builder();

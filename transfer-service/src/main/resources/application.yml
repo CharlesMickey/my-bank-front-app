@@ -4,8 +4,6 @@ server:
 spring:
   application:
     name: transfer-service
-  config:
-    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
   security:
     oauth2:
       resourceserver:
@@ -22,14 +20,12 @@ spring:
             client-secret: ${TRANSFER_CLIENT_SECRET:transfer-secret}
             authorization-grant-type: client_credentials
 
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
-
 resilience4j:
   circuitbreaker:
     instances:
+      accounts:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
       notifications:
         sliding-window-size: 5
         failure-rate-threshold: 50

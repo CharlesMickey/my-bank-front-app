@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: notifications-postgres-test
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: pg-isready
+      image: "postgres:16-alpine"
+      command:
+        - sh
+        - -c
+        - |
+          i=0
+          until pg_isready -h notifications-postgres -p 5432 -U {{ .Values.config.username }}; do
+            i=$((i + 1))
+            if [ "$i" -ge 30 ]; then
+              exit 1
+            fi
+            sleep 2
+          done

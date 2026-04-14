@@ -1,0 +1,15 @@
+gateway-service:
+  service:
+    nodePort: 30080
+
+keycloak:
+  service:
+    nodePort: 30090
+
+accounts-postgres:
+  persistence:
+    size: 1Gi
+
+notifications-postgres:
+  persistence:
+    size: 1Gi

@@ -1,0 +1,20 @@
+1. Build and load Docker images for the Spring Boot services into your local Kubernetes runtime.
+
+2. Install the umbrella chart:
+   helm dependency update ./helm/my-bank
+   helm install my-bank ./helm/my-bank --namespace my-bank --create-namespace
+
+3. The cluster-facing entry points are exposed with NodePort services:
+   - Gateway: http://localhost:30080
+   - Keycloak: http://localhost:30090
+
+4. Run the frontend outside the cluster and point it to Kubernetes:
+   - BANK_GATEWAY_URL=http://localhost:30080
+   - BANK_AUTHORIZATION_URI=http://localhost:30090/realms/my-bank/protocol/openid-connect/auth
+   - BANK_TOKEN_URI=http://localhost:30090/realms/my-bank/protocol/openid-connect/token
+   - BANK_USER_INFO_URI=http://localhost:30090/realms/my-bank/protocol/openid-connect/userinfo
+   - BANK_JWK_SET_URI=http://localhost:30090/realms/my-bank/protocol/openid-connect/certs
+   - BANK_LOGOUT_URI=http://localhost:30090/realms/my-bank/protocol/openid-connect/logout
+
+5. Run Helm hook tests after deployment:
+   helm test my-bank -n my-bank

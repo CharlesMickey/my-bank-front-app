@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.mybank.accounts.service.AccountService;
 import ru.yandex.practicum.mybank.common.dto.AccountDetailsDto;
 import ru.yandex.practicum.mybank.common.dto.InternalCashRequest;
+import ru.yandex.practicum.mybank.common.dto.InternalTransferRequest;
 
 @RestController
 @RequestMapping("/api/internal/accounts")
@@ -27,5 +28,10 @@ public class InternalAccountController {
     @PostMapping("/{login}/withdraw")
     public AccountDetailsDto withdraw(@PathVariable String login, @Valid @RequestBody InternalCashRequest request) {
         return accountService.withdraw(login, request);
+    }
+
+    @PostMapping("/{login}/transfer")
+    public AccountDetailsDto transfer(@PathVariable String login, @Valid @RequestBody InternalTransferRequest request) {
+        return accountService.transfer(login, request);
     }
 }

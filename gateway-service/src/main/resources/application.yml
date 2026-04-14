@@ -4,17 +4,11 @@ server:
 spring:
   application:
     name: gateway-service
-  config:
-    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
       routes:
         - id: accounts-service
-          uri: lb://ACCOUNTS-SERVICE
+          uri: ${BANK_ACCOUNTS_URL:http://localhost:8081}
           predicates:
             - Path=/api/accounts/**
           filters:
@@ -22,7 +16,7 @@ spring:
               args:
                 name: accounts
         - id: cash-service
-          uri: lb://CASH-SERVICE
+          uri: ${BANK_CASH_URL:http://localhost:8082}
           predicates:
             - Path=/api/cash/**
           filters:
@@ -30,7 +24,7 @@ spring:
               args:
                 name: cash
         - id: transfer-service
-          uri: lb://TRANSFER-SERVICE
+          uri: ${BANK_TRANSFER_URL:http://localhost:8083}
           predicates:
             - Path=/api/transfers/**
           filters:
@@ -38,7 +32,7 @@ spring:
               args:
                 name: transfer
         - id: notifications-service
-          uri: lb://NOTIFICATIONS-SERVICE
+          uri: ${BANK_NOTIFICATIONS_URL:http://localhost:8084}
           predicates:
             - Path=/api/notifications/**
           filters:
@@ -50,11 +44,6 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: ${BANK_JWK_SET_URI:http://localhost:9090/realms/my-bank/protocol/openid-connect/certs}
-
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
 
 resilience4j:
   circuitbreaker:

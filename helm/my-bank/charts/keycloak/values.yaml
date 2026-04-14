@@ -1,0 +1,42 @@
+replicaCount: 1
+
+image:
+  repository: quay.io/keycloak/keycloak
+  tag: "26.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 8080
+  nodePort: 30090
+
+config:
+  adminUsername: "admin"
+  healthEnabled: "true"
+  httpEnabled: "true"
+  hostnameStrict: "false"
+
+secret:
+  adminPassword: "admin"
+
+probes:
+  readiness:
+    path: "/realms/my-bank/.well-known/openid-configuration"
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 12
+  liveness:
+    path: "/realms/my-bank/.well-known/openid-configuration"
+    initialDelaySeconds: 60
+    periodSeconds: 20
+    timeoutSeconds: 5
+    failureThreshold: 6
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "512Mi"
+  limits:
+    cpu: "1"
+    memory: "1Gi"

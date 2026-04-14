@@ -1,0 +1,22 @@
+replicaCount: 1
+
+image:
+  repository: postgres
+  tag: "16-alpine"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 5432
+
+config:
+  database: "accounts"
+  username: "accounts"
+  pgData: "/var/lib/postgresql/data/pgdata"
+
+secret:
+  password: "accounts"
+
+persistence:
+  size: 1Gi
+  storageClassName: ""

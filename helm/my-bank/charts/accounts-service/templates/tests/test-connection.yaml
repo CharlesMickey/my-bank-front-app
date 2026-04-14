@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: accounts-service-test
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: wget
+      image: busybox:1.36
+      command:
+        - sh
+        - -c
+        - |
+          i=0
+          until wget -qO- http://accounts-service:8081/actuator/health | grep -q UP; do
+            i=$((i + 1))
+            if [ "$i" -ge 30 ]; then
+              exit 1
+            fi
+            sleep 2
+          done

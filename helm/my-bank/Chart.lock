@@ -1,0 +1,27 @@
+dependencies:
+- name: accounts-postgres
+  repository: file://charts/accounts-postgres
+  version: 0.1.0
+- name: notifications-postgres
+  repository: file://charts/notifications-postgres
+  version: 0.1.0
+- name: keycloak
+  repository: file://charts/keycloak
+  version: 0.1.0
+- name: notifications-service
+  repository: file://charts/notifications-service
+  version: 0.1.0
+- name: accounts-service
+  repository: file://charts/accounts-service
+  version: 0.1.0
+- name: cash-service
+  repository: file://charts/cash-service
+  version: 0.1.0
+- name: transfer-service
+  repository: file://charts/transfer-service
+  version: 0.1.0
+- name: gateway-service
+  repository: file://charts/gateway-service
+  version: 0.1.0
+digest: sha256:f6c8ff50dc7d3b3464add49293adb8ca640d8d72a97b0a9783ffc02ff9e281f9
+generated: "2026-04-13T13:56:21.9577466+03:00"
