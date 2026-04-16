@@ -22,23 +22,21 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: ${BANK_JWK_SET_URI:http://localhost:9090/realms/my-bank/protocol/openid-connect/certs}
-      client:
-        provider:
-          keycloak:
-            token-uri: ${BANK_TOKEN_URI:http://localhost:9090/realms/my-bank/protocol/openid-connect/token}
-        registration:
-          bank-service:
-            provider: keycloak
-            client-id: ${ACCOUNTS_CLIENT_ID:accounts-service}
-            client-secret: ${ACCOUNTS_CLIENT_SECRET:accounts-secret}
-            authorization-grant-type: client_credentials
+  kafka:
+    bootstrap-servers: ${BANK_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      acks: all
+      retries: 10
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        enable.idempotence: true
+        delivery.timeout.ms: 15000
+        request.timeout.ms: 5000
 
-resilience4j:
-  circuitbreaker:
-    instances:
-      notifications:
-        sliding-window-size: 5
-        failure-rate-threshold: 50
+bank:
+  notifications:
+    topic: ${BANK_NOTIFICATIONS_TOPIC:bank.notifications}
 
 management:
   endpoints:

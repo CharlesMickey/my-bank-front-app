@@ -6,8 +6,7 @@
       { "name": "accounts.read" },
       { "name": "accounts.write" },
       { "name": "cash.write" },
-      { "name": "transfer.write" },
-      { "name": "notifications.write" }
+      { "name": "transfer.write" }
     ]
   },
   "clients": [
@@ -39,7 +38,7 @@
       "secret": "accounts-secret",
       "standardFlowEnabled": false,
       "directAccessGrantsEnabled": false,
-      "serviceAccountsEnabled": true
+      "serviceAccountsEnabled": false
     },
     {
       "clientId": "cash-service",
@@ -112,20 +111,11 @@
       ]
     },
     {
-      "username": "service-account-accounts-service",
-      "enabled": true,
-      "serviceAccountClientId": "accounts-service",
-      "realmRoles": [
-        "notifications.write"
-      ]
-    },
-    {
       "username": "service-account-cash-service",
       "enabled": true,
       "serviceAccountClientId": "cash-service",
       "realmRoles": [
-        "accounts.write",
-        "notifications.write"
+        "accounts.write"
       ]
     },
     {
@@ -133,8 +123,7 @@
       "enabled": true,
       "serviceAccountClientId": "transfer-service",
       "realmRoles": [
-        "accounts.write",
-        "notifications.write"
+        "accounts.write"
       ]
     }
   ]

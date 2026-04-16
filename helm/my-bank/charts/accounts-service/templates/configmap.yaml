@@ -7,6 +7,5 @@ data:
   ACCOUNTS_DB_URL: {{ .Values.config.dbUrl | quote }}
   ACCOUNTS_DB_USER: {{ .Values.config.dbUser | quote }}
   BANK_JWK_SET_URI: {{ .Values.config.jwkSetUri | quote }}
-  BANK_TOKEN_URI: {{ .Values.config.tokenUri | quote }}
-  BANK_NOTIFICATIONS_URL: {{ .Values.config.notificationsUrl | quote }}
-  ACCOUNTS_CLIENT_ID: {{ .Values.config.clientId | quote }}
+  BANK_KAFKA_BOOTSTRAP_SERVERS: {{ .Values.config.kafkaBootstrapServers | quote }}
+  BANK_NOTIFICATIONS_TOPIC: {{ .Values.config.notificationsTopic | quote }}

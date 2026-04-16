@@ -14,13 +14,11 @@ config:
   dbUrl: "jdbc:postgresql://accounts-postgres:5432/accounts"
   dbUser: "accounts"
   jwkSetUri: "http://keycloak:8080/realms/my-bank/protocol/openid-connect/certs"
-  tokenUri: "http://keycloak:8080/realms/my-bank/protocol/openid-connect/token"
-  notificationsUrl: "http://notifications-service:8084"
-  clientId: "accounts-service"
+  kafkaBootstrapServers: "kafka:9092"
+  notificationsTopic: "bank.notifications"
 
 secret:
   dbPassword: "accounts"
-  clientSecret: "accounts-secret"
 
 probes:
   readiness:

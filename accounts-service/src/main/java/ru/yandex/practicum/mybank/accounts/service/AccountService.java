@@ -3,7 +3,6 @@ package ru.yandex.practicum.mybank.accounts.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.mybank.accounts.client.NotificationClient;
 import ru.yandex.practicum.mybank.accounts.error.BankException;
 import ru.yandex.practicum.mybank.accounts.model.Account;
 import ru.yandex.practicum.mybank.accounts.repository.AccountRepository;
@@ -13,6 +12,7 @@ import ru.yandex.practicum.mybank.common.dto.AccountUpdateRequest;
 import ru.yandex.practicum.mybank.common.dto.InternalCashRequest;
 import ru.yandex.practicum.mybank.common.dto.InternalTransferRequest;
 import ru.yandex.practicum.mybank.common.dto.NotificationRequest;
+import ru.yandex.practicum.mybank.common.kafka.NotificationPublisher;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,11 +20,11 @@ import java.util.List;
 @Service
 public class AccountService {
     private final AccountRepository accountRepository;
-    private final NotificationClient notificationClient;
+    private final NotificationPublisher notificationPublisher;
 
-    public AccountService(AccountRepository accountRepository, NotificationClient notificationClient) {
+    public AccountService(AccountRepository accountRepository, NotificationPublisher notificationPublisher) {
         this.accountRepository = accountRepository;
-        this.notificationClient = notificationClient;
+        this.notificationPublisher = notificationPublisher;
     }
 
     @Transactional(readOnly = true)
@@ -50,7 +50,7 @@ public class AccountService {
         validateBirthdate(request.birthdate());
         account.setName(request.name().trim());
         account.setBirthdate(request.birthdate());
-        notificationClient.notify(new NotificationRequest(
+        notificationPublisher.publish(new NotificationRequest(
                 login,
                 "ACCOUNT_UPDATED",
                 "\u0414\u0430\u043D\u043D\u044B\u0435 \u0430\u043A\u043A\u0430\u0443\u043D\u0442\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B",

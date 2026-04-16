@@ -8,7 +8,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.yandex.practicum.mybank.accounts.client.NotificationClient;
+import ru.yandex.practicum.mybank.common.kafka.NotificationPublisher;
 
 import java.time.Instant;
 import java.util.List;
@@ -33,7 +33,7 @@ public abstract class ContractBase {
     private JwtDecoder jwtDecoder;
 
     @MockitoBean
-    private NotificationClient notificationClient;
+    private NotificationPublisher notificationPublisher;
 
     @BeforeEach
     void setUpContract() {

@@ -1,14 +1,11 @@
 package ru.yandex.practicum.mybank.notifications;
 
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.context.ApplicationContext;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:notifications;MODE=PostgreSQL;DATABASE_TO_UPPER=false;INIT=CREATE SCHEMA IF NOT EXISTS notifications",
@@ -16,24 +13,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "spring.datasource.password=",
         "spring.flyway.enabled=false",
         "spring.jpa.hibernate.ddl-auto=create-drop",
-        "management.endpoints.web.exposure.include=*"
+        "spring.main.web-application-type=none"
 })
-@AutoConfigureMockMvc
 class NotificationsServiceApplicationTests {
     @Autowired
-    private MockMvc mockMvc;
+    private ApplicationContext applicationContext;
 
     @Test
-    @DisplayName("Actuator health доступен без аутентификации")
-    void actuatorHealthIsPublic() throws Exception {
-        mockMvc.perform(get("/actuator/health"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @DisplayName("Sensitive actuator endpoint требует аутентификацию")
-    void actuatorEnvRequiresAuthentication() throws Exception {
-        mockMvc.perform(get("/actuator/env"))
-                .andExpect(status().isUnauthorized());
+    void startsAsNonWebKafkaConsumerApplication() {
+        assertThat(applicationContext.getEnvironment().getProperty("spring.main.web-application-type")).isEqualTo("none");
+        assertThat(applicationContext.containsBean("notificationEventConsumer")).isTrue();
     }
 }

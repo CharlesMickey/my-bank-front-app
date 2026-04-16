@@ -12,10 +12,11 @@ service:
 config:
   serverPort: "8083"
   accountsUrl: "http://accounts-service:8081"
-  notificationsUrl: "http://notifications-service:8084"
   jwkSetUri: "http://keycloak:8080/realms/my-bank/protocol/openid-connect/certs"
   tokenUri: "http://keycloak:8080/realms/my-bank/protocol/openid-connect/token"
   clientId: "transfer-service"
+  kafkaBootstrapServers: "kafka:9092"
+  notificationsTopic: "bank.notifications"
 
 secret:
   clientSecret: "transfer-secret"

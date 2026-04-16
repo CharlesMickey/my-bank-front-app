@@ -7,5 +7,4 @@ data:
   BANK_ACCOUNTS_URL: {{ .Values.config.accountsUrl | quote }}
   BANK_CASH_URL: {{ .Values.config.cashUrl | quote }}
   BANK_TRANSFER_URL: {{ .Values.config.transferUrl | quote }}
-  BANK_NOTIFICATIONS_URL: {{ .Values.config.notificationsUrl | quote }}
   BANK_JWK_SET_URI: {{ .Values.config.jwkSetUri | quote }}
