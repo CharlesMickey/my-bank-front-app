@@ -5,7 +5,8 @@ metadata:
 data:
   SERVER_PORT: {{ .Values.config.serverPort | quote }}
   BANK_ACCOUNTS_URL: {{ .Values.config.accountsUrl | quote }}
-  BANK_NOTIFICATIONS_URL: {{ .Values.config.notificationsUrl | quote }}
   BANK_JWK_SET_URI: {{ .Values.config.jwkSetUri | quote }}
   BANK_TOKEN_URI: {{ .Values.config.tokenUri | quote }}
   TRANSFER_CLIENT_ID: {{ .Values.config.clientId | quote }}
+  BANK_KAFKA_BOOTSTRAP_SERVERS: {{ .Values.config.kafkaBootstrapServers | quote }}
+  BANK_NOTIFICATIONS_TOPIC: {{ .Values.config.notificationsTopic | quote }}

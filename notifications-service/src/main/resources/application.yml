@@ -1,9 +1,8 @@
-server:
-  port: ${SERVER_PORT:8084}
-
 spring:
   application:
     name: notifications-service
+  main:
+    web-application-type: none
   datasource:
     url: ${NOTIFICATIONS_DB_URL:jdbc:postgresql://localhost:5432/bank}
     username: ${NOTIFICATIONS_DB_USER:bank}
@@ -17,11 +16,23 @@ spring:
     properties:
       hibernate:
         default_schema: notifications
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: ${BANK_JWK_SET_URI:http://localhost:9090/realms/my-bank/protocol/openid-connect/certs}
+  kafka:
+    bootstrap-servers: ${BANK_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${BANK_NOTIFICATIONS_GROUP:notifications-service}
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "ru.yandex.practicum.mybank.common.dto"
+        spring.json.value.default.type: ru.yandex.practicum.mybank.common.dto.NotificationRequest
+    listener:
+      ack-mode: record
+
+bank:
+  notifications:
+    topic: ${BANK_NOTIFICATIONS_TOPIC:bank.notifications}
 
 management:
   endpoints:

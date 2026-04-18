@@ -5,18 +5,18 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.mybank.common.dto.NotificationRequest;
 import ru.yandex.practicum.mybank.common.dto.OperationResultDto;
 import ru.yandex.practicum.mybank.common.dto.TransferRequest;
+import ru.yandex.practicum.mybank.common.kafka.NotificationPublisher;
 import ru.yandex.practicum.mybank.transfer.client.AccountsClient;
-import ru.yandex.practicum.mybank.transfer.client.NotificationClient;
 import ru.yandex.practicum.mybank.transfer.error.BankException;
 
 @Service
 public class TransferService {
     private final AccountsClient accountsClient;
-    private final NotificationClient notificationClient;
+    private final NotificationPublisher notificationPublisher;
 
-    public TransferService(AccountsClient accountsClient, NotificationClient notificationClient) {
+    public TransferService(AccountsClient accountsClient, NotificationPublisher notificationPublisher) {
         this.accountsClient = accountsClient;
-        this.notificationClient = notificationClient;
+        this.notificationPublisher = notificationPublisher;
     }
 
     public OperationResultDto transfer(String fromLogin, TransferRequest request) {
@@ -30,8 +30,8 @@ public class TransferService {
         accountsClient.transfer(fromLogin, request.login(), request.value());
 
         String message = "\u0423\u0441\u043F\u0435\u0448\u043D\u043E \u043F\u0435\u0440\u0435\u0432\u0435\u0434\u0435\u043D\u043E %d \u0440\u0443\u0431. \u043A\u043B\u0438\u0435\u043D\u0442\u0443 %s".formatted(request.value(), request.login());
-        notificationClient.notify(new NotificationRequest(fromLogin, "TRANSFER_SENT", message, request.value()));
-        notificationClient.notify(new NotificationRequest(
+        notificationPublisher.publish(new NotificationRequest(fromLogin, "TRANSFER_SENT", message, request.value()));
+        notificationPublisher.publish(new NotificationRequest(
                 request.login(),
                 "TRANSFER_RECEIVED",
                 "\u041F\u043E\u043B\u0443\u0447\u0435\u043D \u043F\u0435\u0440\u0435\u0432\u043E\u0434 %d \u0440\u0443\u0431. \u043E\u0442 \u043A\u043B\u0438\u0435\u043D\u0442\u0430 %s".formatted(request.value(), fromLogin),

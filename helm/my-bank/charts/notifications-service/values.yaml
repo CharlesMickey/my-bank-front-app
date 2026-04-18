@@ -6,31 +6,29 @@ image:
   pullPolicy: IfNotPresent
 
 service:
-  type: ClusterIP
-  port: 8084
+  enabled: false
 
 config:
-  serverPort: "8084"
   dbUrl: "jdbc:postgresql://notifications-postgres:5432/notifications"
   dbUser: "notifications"
-  jwkSetUri: "http://keycloak:8080/realms/my-bank/protocol/openid-connect/certs"
+  kafkaBootstrapServers: "kafka:9092"
+  notificationsTopic: "bank.notifications"
+  consumerGroup: "notifications-service"
 
 secret:
   dbPassword: "notifications"
 
 probes:
   readiness:
-    path: "/actuator/health"
-    initialDelaySeconds: 20
+    initialDelaySeconds: 15
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 6
   liveness:
-    path: "/actuator/health"
-    initialDelaySeconds: 40
+    initialDelaySeconds: 30
     periodSeconds: 20
     timeoutSeconds: 5
-    failureThreshold: 3
+    failureThreshold: 6
 
 resources:
   requests:

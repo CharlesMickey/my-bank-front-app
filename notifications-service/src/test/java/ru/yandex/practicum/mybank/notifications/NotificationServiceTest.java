@@ -13,7 +13,8 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.datasource.username=sa",
         "spring.datasource.password=",
         "spring.flyway.enabled=false",
-        "spring.jpa.hibernate.ddl-auto=create-drop"
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "spring.main.web-application-type=none"
 })
 class NotificationServiceTest {
     @Autowired
@@ -21,7 +22,7 @@ class NotificationServiceTest {
 
     @Test
     void savesNotificationEvent() {
-        var event = notificationService.notify(new NotificationRequest("demo", "TEST", "Проверка", 10L));
+        var event = notificationService.notify(new NotificationRequest("demo", "TEST", "\u041F\u0440\u043E\u0432\u0435\u0440\u043A\u0430", 10L));
 
         assertThat(event.getId()).isNotNull();
         assertThat(event.getLogin()).isEqualTo("demo");

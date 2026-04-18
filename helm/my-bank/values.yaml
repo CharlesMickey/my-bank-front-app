@@ -13,3 +13,7 @@ accounts-postgres:
 notifications-postgres:
   persistence:
     size: 1Gi
+
+kafka:
+  persistence:
+    size: 2Gi

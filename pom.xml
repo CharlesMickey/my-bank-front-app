@@ -21,6 +21,7 @@
     <modules>
         <module>bank-common-dto</module>
         <module>bank-common-security</module>
+        <module>bank-common-kafka</module>
         <module>bank-common-oauth2-client</module>
         <module>gateway-service</module>
         <module>front-ui</module>

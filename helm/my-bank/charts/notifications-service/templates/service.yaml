@@ -1,12 +1,10 @@
+{{- if .Values.service.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
   name: notifications-service
 spec:
-  type: {{ .Values.service.type }}
+  type: ClusterIP
   selector:
     app: notifications-service
-  ports:
-    - name: http
-      port: {{ .Values.service.port }}
-      targetPort: http
+{{- end }}

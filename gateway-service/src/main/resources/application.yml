@@ -31,14 +31,6 @@ spring:
             - name: CircuitBreaker
               args:
                 name: transfer
-        - id: notifications-service
-          uri: ${BANK_NOTIFICATIONS_URL:http://localhost:8084}
-          predicates:
-            - Path=/api/notifications/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: notifications
   security:
     oauth2:
       resourceserver:
@@ -55,9 +47,6 @@ resilience4j:
         sliding-window-size: 5
         failure-rate-threshold: 50
       transfer:
-        sliding-window-size: 5
-        failure-rate-threshold: 50
-      notifications:
         sliding-window-size: 5
         failure-rate-threshold: 50
 

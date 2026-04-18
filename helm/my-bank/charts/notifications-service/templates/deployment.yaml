@@ -16,21 +16,22 @@ spec:
         - name: notifications-service
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - name: http
-              containerPort: {{ .Values.service.port }}
           readinessProbe:
-            httpGet:
-              path: {{ .Values.probes.readiness.path | quote }}
-              port: http
+            exec:
+              command:
+                - sh
+                - -c
+                - kill -0 1
             initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
             periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
             timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
             failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
           livenessProbe:
-            httpGet:
-              path: {{ .Values.probes.liveness.path | quote }}
-              port: http
+            exec:
+              command:
+                - sh
+                - -c
+                - kill -0 1
             initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
             periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
             timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
