@@ -16,6 +16,9 @@ config:
   jwkSetUri: "http://keycloak:8080/realms/my-bank/protocol/openid-connect/certs"
   kafkaBootstrapServers: "kafka:9092"
   notificationsTopic: "bank.notifications"
+  zipkinEndpoint: "http://zipkin:9411/api/v2/spans"
+  logstashHost: "logstash"
+  logstashPort: "5000"
 
 secret:
   dbPassword: "accounts"

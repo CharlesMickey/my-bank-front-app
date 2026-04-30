@@ -2,6 +2,7 @@ package ru.yandex.practicum.mybank.accounts;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import ru.yandex.practicum.mybank.accounts.error.BankException;
@@ -19,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
         "spring.flyway.enabled=false",
         "spring.jpa.hibernate.ddl-auto=create-drop"
 })
+@AutoConfigureObservability
 class AccountServiceTest {
     @Autowired
     private AccountService accountService;

@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: {{ .Values.config.scrapeInterval }}
+      evaluation_interval: {{ .Values.config.scrapeInterval }}
+
+    rule_files:
+      - /etc/prometheus/alerts/alerts.yml
+
+    scrape_configs:
+      - job_name: gateway-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ["gateway-service:8090"]
+      - job_name: accounts-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ["accounts-service:8081"]
+      - job_name: cash-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ["cash-service:8082"]
+      - job_name: transfer-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ["transfer-service:8083"]
+      - job_name: notifications-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ["notifications-service:8084"]
+      - job_name: front-ui
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ["{{ .Values.config.frontUiTarget }}"]
+  alerts.yml: |
+    groups:
+      - name: my-bank-alerts
+        rules:
+          - alert: HighHttp5xxRate
+            expr: |
+              sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+              /
+              clamp_min(sum(rate(http_server_requests_seconds_count[5m])), 1)
+              > {{ .Values.alerts.http5xxRateThreshold }}
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: High HTTP 5xx rate
+              description: HTTP 5xx ratio is above {{ .Values.alerts.http5xxRateThreshold }} for 5 minutes.
+          - alert: FailedWithdrawalsGrowing
+            expr: increase(bank_cash_withdraw_failures_total[5m]) >= {{ .Values.alerts.failedWithdrawalsIncreaseThreshold }}
+            for: 1m
+            labels:
+              severity: warning
+            annotations:
+              summary: Failed withdrawals are increasing
+              description: Failed withdrawal counter increased at least {{ .Values.alerts.failedWithdrawalsIncreaseThreshold }} time(s) in 5 minutes.
+          - alert: FailedTransfersGrowing
+            expr: increase(bank_transfer_failures_total[5m]) >= {{ .Values.alerts.failedTransfersIncreaseThreshold }}
+            for: 1m
+            labels:
+              severity: warning
+            annotations:
+              summary: Failed transfers are increasing
+              description: Failed transfer counter increased at least {{ .Values.alerts.failedTransfersIncreaseThreshold }} time(s) in 5 minutes.
+          - alert: NotificationFailuresGrowing
+            expr: increase(bank_notifications_failures_total[5m]) >= {{ .Values.alerts.notificationFailuresIncreaseThreshold }}
+            for: 1m
+            labels:
+              severity: warning
+            annotations:
+              summary: Notification failures are increasing
+              description: Notification failure counter increased at least {{ .Values.alerts.notificationFailuresIncreaseThreshold }} time(s) in 5 minutes.
+          - alert: PrometheusTargetDown
+            expr: up == 0
+            for: 2m
+            labels:
+              severity: critical
+            annotations:
+              summary: Scrape target is down
+              description: Prometheus cannot scrape {{ "{{ $labels.job }}" }}.
+          - alert: HighHttpLatencyP95
+            expr: histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, application)) > {{ .Values.alerts.httpLatencyP95ThresholdSeconds }}
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: High HTTP latency p95
+              description: p95 latency is above {{ .Values.alerts.httpLatencyP95ThresholdSeconds }} seconds.

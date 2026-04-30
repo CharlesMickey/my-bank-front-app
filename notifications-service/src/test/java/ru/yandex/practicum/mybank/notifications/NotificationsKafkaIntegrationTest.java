@@ -4,6 +4,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -32,6 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.kafka.consumer.group-id=notifications-kafka-test",
         "bank.notifications.topic=bank.notifications"
 })
+@AutoConfigureObservability
 @EmbeddedKafka(partitions = 1, topics = "bank.notifications")
 @DirtiesContext
 class NotificationsKafkaIntegrationTest {

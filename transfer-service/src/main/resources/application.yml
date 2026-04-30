@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: transfer-service
+  reactor:
+    context-propagation: auto
   security:
     oauth2:
       resourceserver:
@@ -21,6 +23,8 @@ spring:
             authorization-grant-type: client_credentials
   kafka:
     bootstrap-servers: ${BANK_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    template:
+      observation-enabled: true
     producer:
       acks: all
       retries: 10
@@ -44,6 +48,39 @@ resilience4j:
 
 management:
   endpoints:
+    access:
+      default: none
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
+  endpoint:
+    health:
+      access: read-only
+      probes:
+        enabled: true
+    info:
+      access: read-only
+    prometheus:
+      access: read-only
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5,0.95,0.99
+  simple:
+    metrics:
+      export:
+        enabled: false
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${BANK_ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}
+
+logging:
+  level:
+    root: INFO

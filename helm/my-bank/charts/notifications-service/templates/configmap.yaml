@@ -3,8 +3,12 @@ kind: ConfigMap
 metadata:
   name: notifications-service-config
 data:
+  SERVER_PORT: {{ .Values.config.serverPort | quote }}
   NOTIFICATIONS_DB_URL: {{ .Values.config.dbUrl | quote }}
   NOTIFICATIONS_DB_USER: {{ .Values.config.dbUser | quote }}
   BANK_KAFKA_BOOTSTRAP_SERVERS: {{ .Values.config.kafkaBootstrapServers | quote }}
   BANK_NOTIFICATIONS_TOPIC: {{ .Values.config.notificationsTopic | quote }}
   BANK_NOTIFICATIONS_GROUP: {{ .Values.config.consumerGroup | quote }}
+  BANK_ZIPKIN_ENDPOINT: {{ .Values.config.zipkinEndpoint | quote }}
+  BANK_LOGSTASH_HOST: {{ .Values.config.logstashHost | quote }}
+  BANK_LOGSTASH_PORT: {{ .Values.config.logstashPort | quote }}

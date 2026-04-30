@@ -1,131 +1,55 @@
-﻿# My Bank App
+````markdown
+# My Bank App
 
-Микросервисное приложение «Банк» для проектной работы одиннадцатого спринта. Проект собран как Maven multi-module на Java 21, Spring Boot и Spring Cloud. Для уведомлений используется Apache Kafka, а для развёртывания в Kubernetes используется зонтичный Helm-чарт с сабчартами для сервисов, PostgreSQL, Kafka и Keycloak.
+Микросервисное приложение «Банк» для проектной работы двенадцатого спринта.
 
-## Выбранная схема развёртывания
+Бизнес-схема приложения сохранена: `front-ui` работает вне Kubernetes, а `gateway-service`, `accounts-service`, `cash-service`, `transfer-service`, `notifications-service`, `keycloak`, PostgreSQL, Kafka и весь observability-стек запускаются в Kubernetes через зонтичный Helm-чарт.
 
-- `front-ui` запускается локально вне Kubernetes.
-- `gateway-service`, `accounts-service`, `cash-service`, `transfer-service`, `notifications-service`, `keycloak`, PostgreSQL и Kafka запускаются в Kubernetes.
-- Внутри кластера Service Discovery реализован штатно через Kubernetes `Service` и DNS-имена сервисов.
-- Конфигурация сервисов вынесена в `ConfigMap` и `Secret`.
-- В качестве Gateway API сохранён `gateway-service`.
-- Уведомления передаются только через Apache Kafka, без REST-вызовов в `notifications-service`.
-- Для доступа снаружи кластера используются `NodePort`:
-  - Gateway: `30080`
-  - Keycloak: `30090`
+## Что добавлено в observability
 
-## Активные модули
+В проект добавелны:
 
-| Модуль | Назначение | Порт |
-| --- | --- | --- |
-| `front-ui` | Thymeleaf UI, Authorization Code Flow, запросы в backend только через Gateway | `8080` |
-| `gateway-service` | Gateway API, проверка JWT и маршрутизация запросов | `8090` |
-| `accounts-service` | Аккаунты, баланс, редактирование профиля, PostgreSQL | `8081` |
-| `cash-service` | Пополнение и снятие денег | `8082` |
-| `transfer-service` | Переводы между аккаунтами | `8083` |
-| `notifications-service` | Kafka consumer, журнал уведомлений, PostgreSQL | без HTTP-порта |
-| `bank-common-dto` | Общие DTO | - |
-| `bank-common-security` | Общая security-логика | - |
-| `bank-common-oauth2-client` | Общая OAuth2 client-конфигурация | - |
-| `bank-common-kafka` | Общая Kafka-конфигурация и publisher уведомлений | - |
+- распределённая трассировка через Zipkin;
+- метрики через Spring Boot Actuator, Micrometer и Prometheus;
+- дашборд Grafana с HTTP, JVM и бизнес-метриками;
+- JSON-логирование через Logback;
+- отправка логов в Logstash;
+- Elasticsearch и Kibana для поиска и анализа логов;
+- Prometheus alerts для HTTP 5xx, latency, failed withdrawals, failed transfers, failed notifications и недоступных scrape-targets.
 
-## Схема уведомлений через Kafka
+## Выбранная схема запуска
 
-- `accounts-service`, `cash-service` и `transfer-service` публикуют события в Kafka topic `bank.notifications`.
-- Публикация настроена со стратегией `at least once`:
-  - producer использует `acks=all`
-  - включены `retries`
-  - включена идемпотентность producer
-- `notifications-service` читает события через consumer group `notifications-service`.
-- Смещение подтверждается после обработки сообщения, поэтому после рестарта сервис продолжает чтение с последнего подтверждённого сообщения.
-- Порядок сообщений между разными типами уведомлений специально не гарантируется.
-
-## Kubernetes и Helm
-
-Структура Helm-чарта:
-
-- зонтичный чарт: `helm/my-bank`
-- сабчарты:
-  - `gateway-service`
-  - `accounts-service`
-  - `cash-service`
-  - `transfer-service`
-  - `notifications-service`
-  - `accounts-postgres`
-  - `notifications-postgres`
-  - `kafka`
-  - `keycloak`
-
-Для баз данных и Kafka используются `StatefulSet`, для приложений и Keycloak используются `Deployment`.
+- `front-ui` запускается локально на `http://localhost:8080`;
+- backend-сервисы и observability-стек запускаются в Kubernetes namespace `my-bank`;
+- доступ к сервисам снаружи организован через NodePort.
 
 ## Требования
 
-- Java 21
-- Maven 3.9+ или Maven Wrapper
-- Docker Desktop
-- локальный Kubernetes-кластер: Docker Desktop Kubernetes, Kind, Minikube, Rancher Desktop или аналог
-- `kubectl`
-- `helm`
+Для запуска проекта Вам потребуется:
+
+- Java 21;
+- Maven 3.9+ или Maven Wrapper;
+- Docker Desktop с включённым Kubernetes;
+- kubectl;
+- Helm.
 
 ## Сборка и тесты
 
-Сборка проекта:
+Собрать проект:
 
 ```powershell
 .\mvnw.cmd clean package
-```
+````
 
-Запуск тестов:
+Запустить тесты:
 
 ```powershell
 .\mvnw.cmd test
 ```
 
-В проекте используются:
+## Docker-образы backend-сервисов
 
-- JUnit 5
-- Spring Boot Test
-- Spring Cloud Contract для `accounts-service`
-- Embedded Kafka для интеграционных тестов взаимодействия через Kafka
-- H2 для интеграционных тестов сервисов
-
-## Локальный запуск через Docker Compose
-
-Собрать и запустить все контейнеры:
-
-```powershell
-docker compose up --build -d
-```
-
-Проверить состояние:
-
-```powershell
-docker compose ps
-```
-
-Что поднимается в Compose:
-
-- `postgres`
-- `kafka`
-- `kafka-init` для создания topic `bank.notifications`
-- `keycloak`
-- `gateway-service`
-- `front-ui`
-- `accounts-service`
-- `cash-service`
-- `transfer-service`
-- `notifications-service`
-
-Точки входа при запуске через Compose:
-
-- Front UI: `http://localhost:8080`
-- Gateway: `http://localhost:8090`
-- Keycloak: `http://localhost:9090`
-- Kafka broker: `localhost:9092`
-
-## Сборка Docker-образов для Kubernetes
-
-Перед установкой Helm-чарта нужно собрать образы сервисов:
+Перед установкой Helm-чарта собрать локальные Docker-образы сервисов:
 
 ```powershell
 $services = 'gateway-service','accounts-service','cash-service','transfer-service','notifications-service'
@@ -134,72 +58,51 @@ foreach ($service in $services) {
 }
 ```
 
-Если ваш Kubernetes использует тот же Docker daemon, дополнительная загрузка образов не нужна. Для `kind` и `minikube` загрузите образы вручную.
-
-Пример для `kind`:
-
-```powershell
-$services = 'gateway-service','accounts-service','cash-service','transfer-service','notifications-service'
-foreach ($service in $services) {
-  kind load docker-image "${service}:latest"
-}
-```
-
-Пример для `minikube`:
-
-```powershell
-$services = 'gateway-service','accounts-service','cash-service','transfer-service','notifications-service'
-foreach ($service in $services) {
-  minikube image load "${service}:latest"
-}
-```
-
 ## Установка в Kubernetes
 
-Обновить зависимости чарта и установить приложение:
+Обновить зависимости Helm-чарта:
 
 ```powershell
 helm dependency update .\helm\my-bank
+```
+
+Установить или обновить релиз:
+
+```powershell
 helm upgrade --install my-bank .\helm\my-bank --namespace my-bank --create-namespace
 ```
 
-Проверить ресурсы:
+Проверить ресурсы в namespace `my-bank`:
 
 ```powershell
 kubectl get deployments,sts,svc -n my-bank
 kubectl get pods -n my-bank
 ```
 
-Проверить Helm chart:
+Проверить Helm-шаблоны и Helm-тесты:
 
 ```powershell
 helm lint .\helm\my-bank
+helm template my-bank .\helm\my-bank
 helm test my-bank --namespace my-bank
 ```
 
-## Доступ к приложению в Kubernetes
+## Доступные точки входа
 
-После установки чарта точки входа будут такими:
+| Компонент                                    | URL                      |
+| -------------------------------------------- | ------------------------ |
+| Front UI                                     | `http://localhost:8080`  |
+| Gateway API                                  | `http://localhost:30080` |
+| Keycloak                                     | `http://localhost:30090` |
+| Prometheus                                   | `http://localhost:30091` |
+| Kibana                                       | `http://localhost:30092` |
+| Grafana                                      | `http://localhost:30093` |
+| Zipkin                                       | `http://localhost:30094` |
+| Logstash TCP input для локального `front-ui` | `localhost:30095`        |
 
-- Gateway API: `http://localhost:30080`
-- Keycloak: `http://localhost:30090`
+## Запуск Front UI с observability
 
-Администратор Keycloak:
-
-- логин: `admin`
-- пароль: `admin`
-
-Демо-пользователи:
-
-| Login | Password |
-| --- | --- |
-| `demo` | `password` |
-| `petrov` | `password` |
-| `sidorov` | `password` |
-
-## Запуск Front UI вне Kubernetes
-
-Фронт запускается локально и обращается к Gateway и Keycloak в Kubernetes через `NodePort`.
+Для полной трассировки, метрик и логов запустить `front-ui` локально после установки Helm-чарта:
 
 ```powershell
 $env:BANK_GATEWAY_URL='http://localhost:30080'
@@ -208,72 +111,321 @@ $env:BANK_TOKEN_URI='http://localhost:30090/realms/my-bank/protocol/openid-conne
 $env:BANK_USER_INFO_URI='http://localhost:30090/realms/my-bank/protocol/openid-connect/userinfo'
 $env:BANK_JWK_SET_URI='http://localhost:30090/realms/my-bank/protocol/openid-connect/certs'
 $env:BANK_LOGOUT_URI='http://localhost:30090/realms/my-bank/protocol/openid-connect/logout'
+$env:BANK_ZIPKIN_ENDPOINT='http://localhost:30094/api/v2/spans'
+$env:BANK_LOGSTASH_HOST='localhost'
+$env:BANK_LOGSTASH_PORT='30095'
 $env:FRONT_CLIENT_ID='front-ui'
 $env:FRONT_CLIENT_SECRET='front-secret'
 .\mvnw.cmd -pl front-ui spring-boot:run
 ```
 
-После старта откройте:
+Prometheus в Kubernetes scrapes `front-ui` по адресу `host.docker.internal:8080`, поэтому для фронтовых метрик `front-ui` должен быть запущен локально.
+
+Если Ваш Kubernetes-кластер не видит `host.docker.internal`, переопределить `prometheus.config.frontUiTarget` в Helm values на доступный адрес хоста.
+
+## Пользователи для проверки
+
+| Login     | Password   |
+| --------- | ---------- |
+| `demo`    | `password` |
+| `petrov`  | `password` |
+| `sidorov` | `password` |
+
+Администратор Keycloak:
 
 ```text
-http://localhost:8080
+login: admin
+password: admin
 ```
 
-## Что хранится в Kubernetes
+## Actuator endpoints
 
-- `ConfigMap`:
-  - адреса межсервисного взаимодействия
-  - OAuth2 endpoints
-  - параметры Kafka и topic name
-  - параметры PostgreSQL
-- `Secret`:
-  - пароли PostgreSQL
-  - client secret сервисов
-  - пароль администратора Keycloak
+Публично используются только следующие endpoints:
 
-## Базы данных и Kafka
+```text
+/actuator/health
+/actuator/info
+/actuator/prometheus
+```
 
-Используются отдельные persistent StatefulSet:
+Чувствительные actuator endpoints наружу не открываются.
 
-| Сабчарт | Назначение | Используется сервисом |
-| --- | --- | --- |
-| `accounts-postgres` | PostgreSQL база `accounts` | `accounts-service` |
-| `notifications-postgres` | PostgreSQL база `notifications` | `notifications-service` |
-| `kafka` | Kafka broker в режиме KRaft | все producer/consumer сервисы |
+## Zipkin и трассировка
 
-Flyway-схемы создаются при старте приложений:
+Во всех HTTP-сервисах и `front-ui` включены:
 
-- `accounts-service` использует схему `accounts`
-- `notifications-service` использует схему `notifications`
+* `micrometer-tracing-bridge-brave`;
+* `zipkin-reporter-brave`;
+* sampling probability `1.0`.
 
-Kafka topic `bank.notifications` создаётся Helm hook job в Kubernetes и `kafka-init` сервисом в Docker Compose.
+Для Kafka включено observation на producer/consumer.
 
-## Helm-тесты
+Для сервисов с БД добавлены дочерние observation spans на операции доступа к данным.
 
-В сабчартах реализованы Helm hook tests для проверки доступности:
+Открыть Zipkin:
 
-- `gateway-service`
-- `accounts-service`
-- `cash-service`
-- `transfer-service`
-- `notifications-service`
-- `keycloak`
-- `accounts-postgres`
-- `notifications-postgres`
-- `kafka`
+```text
+http://localhost:30094
+```
+
+Проверить end-to-end trace:
+
+1. Запустить Helm-чарт.
+2. Запустить локально `front-ui` с `BANK_ZIPKIN_ENDPOINT=http://localhost:30094/api/v2/spans`.
+3. Войти в приложение.
+4. Выполнить одно из действий:
+
+    * сохранить профиль;
+    * пополнить счёт;
+    * снять деньги;
+    * перевести деньги.
+5. Открыть Zipkin.
+6. Найти трейсы по сервисам:
+
+    * `front-ui`;
+    * `gateway-service`;
+    * `accounts-service`;
+    * `cash-service`;
+    * `transfer-service`;
+    * `notifications-service`.
+
+Ожидаемые цепочки трассировки:
+
+```text
+front-ui -> gateway-service -> accounts-service
+front-ui -> gateway-service -> cash-service -> accounts-service -> Kafka -> notifications-service
+front-ui -> gateway-service -> transfer-service -> accounts-service -> Kafka -> notifications-service
+```
+
+## Prometheus и метрики
+
+Открыть Prometheus:
+
+```text
+http://localhost:30091
+```
+
+Prometheus scrapes:
+
+* `gateway-service`;
+* `accounts-service`;
+* `cash-service`;
+* `transfer-service`;
+* `notifications-service`;
+* локальный `front-ui`.
+
+## Бизнес-метрики
+
+### `bank.cash.withdraw.failures`
+
+Tags:
+
+```text
+login
+```
+
+Метрика инкрементируется в `CashService.java` при фактической неуспешной попытке снятия денег.
+
+### `bank.transfer.failures`
+
+Tags:
+
+```text
+senderLogin
+recipientLogin
+```
+
+Метрика инкрементируется в `TransferService.java` при фактической неуспешной попытке перевода денег.
+
+### `bank.notifications.failures`
+
+Tags:
+
+```text
+login
+```
+
+Метрика инкрементируется в `NotificationService.java` при невозможности отправки или обработки уведомления.
+
+## Что смотреть в Prometheus
+
+HTTP RPS:
+
+```promql
+sum(rate(http_server_requests_seconds_count[5m])) by (application)
+```
+
+HTTP 4xx:
+
+```promql
+sum(rate(http_server_requests_seconds_count{status=~"4.."}[5m])) by (application)
+```
+
+HTTP 5xx:
+
+```promql
+sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) by (application)
+```
+
+p95 latency:
+
+```promql
+histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, application))
+```
+
+Failed withdrawals:
+
+```promql
+sum(bank_cash_withdraw_failures_total) by (login)
+```
+
+Failed transfers:
+
+```promql
+sum(bank_transfer_failures_total) by (senderLogin, recipientLogin)
+```
+
+Failed notifications:
+
+```promql
+sum(bank_notifications_failures_total) by (login)
+```
+
+## Алерты
+
+Алерты реализованы в Prometheus и находятся в сабчарте Prometheus зонтичного Helm-чарта.
+
+Пороговые значения:
+
+| Alert                         | Условие                                                |
+| ----------------------------- | ------------------------------------------------------ |
+| `HighHttp5xxRate`             | доля HTTP 5xx выше `0.05` в течение `5m`               |
+| `FailedWithdrawalsGrowing`    | `increase(bank_cash_withdraw_failures_total[5m]) >= 1` |
+| `FailedTransfersGrowing`      | `increase(bank_transfer_failures_total[5m]) >= 1`      |
+| `NotificationFailuresGrowing` | `increase(bank_notifications_failures_total[5m]) >= 1` |
+| `PrometheusTargetDown`        | `up == 0` в течение `2m`                               |
+| `HighHttpLatencyP95`          | p95 latency выше `1.5s` в течение `5m`                 |
+
+## Grafana
+
+Открыть Grafana:
+
+```text
+http://localhost:30093
+```
+
+Логин по умолчанию:
+
+```text
+login: admin
+password: admin
+```
+
+Datasource на Prometheus и dashboard provisioning создаются автоматически через ConfigMap.
+
+Предустановленный dashboard:
+
+```text
+My Bank Observability
+```
+
+На dashboard доступны:
+
+* HTTP RPS;
+* HTTP 4xx;
+* HTTP 5xx;
+* p95 latency;
+* p99 latency;
+* JVM heap memory;
+* CPU usage;
+* failed withdrawals;
+* failed transfers;
+* failed notifications.
+
+## ELK и логирование
+
+Все сервисы и `front-ui` используют единый JSON-формат логов через `logback-spring.xml`.
+
+В логах есть поля:
+
+* `timestamp`;
+* `level`;
+* `service`;
+* `logger`;
+* `thread`;
+* `message`;
+* `exception`;
+* `traceId`;
+* `spanId`.
+
+Основные бизнес-операции логируются на уровне `info`.
+
+Ошибки и сбои интеграций логируются на уровнях `warn` и `error`.
+
+Открыть Kibana:
+
+```text
+http://localhost:30092
+```
+
+В Kubernetes развёрнуты:
+
+* Elasticsearch;
+* Logstash;
+* Kibana.
+
+Логи backend-сервисов из Kubernetes отправляются в `logstash:5000`.
+
+Для локального `front-ui` используется `localhost:30095`.
+
+## Проверка логов
+
+Открыть Kibana.
+
+При первом запуске создать Data View:
+
+```text
+name: my-bank-logs-*
+time field: @timestamp
+```
+
+Перейти в Discover.
+
+Выполнить действие в UI.
+
+Искать логи по полям:
+
+* `service`;
+* `traceId`;
+* `spanId`;
+* `login`.
+
+Примеры поиска:
+
+По сервису:
+
+```text
+service:"cash-service"
+```
+
+По trace id:
+
+```text
+traceId:"<trace-id-from-zipkin-or-log>"
+```
+
+Проверить логи Logstash:
+
+```powershell
+kubectl logs -n my-bank deploy/my-bank-logstash
+```
 
 ## Полезные команды
 
-Обновить релиз после изменения values или шаблонов:
+Обновить релиз:
 
 ```powershell
 helm upgrade my-bank .\helm\my-bank --namespace my-bank
-```
-
-Посмотреть итоговые YAML без установки:
-
-```powershell
-helm template my-bank .\helm\my-bank
 ```
 
 Удалить релиз:

@@ -17,3 +17,25 @@ notifications-postgres:
 kafka:
   persistence:
     size: 2Gi
+
+zipkin:
+  service:
+    nodePort: 30094
+
+prometheus:
+  service:
+    nodePort: 30091
+  config:
+    frontUiTarget: "host.docker.internal:8080"
+
+grafana:
+  service:
+    nodePort: 30093
+
+logstash:
+  service:
+    nodePort: 30095
+
+kibana:
+  service:
+    nodePort: 30092

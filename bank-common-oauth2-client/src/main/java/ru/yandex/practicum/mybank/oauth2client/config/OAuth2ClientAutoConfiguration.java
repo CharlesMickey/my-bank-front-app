@@ -3,6 +3,8 @@ package ru.yandex.practicum.mybank.oauth2client.config;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.ObjectProvider;
+import io.micrometer.observation.ObservationRegistry;
 import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
@@ -17,8 +19,13 @@ public class OAuth2ClientAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = "loadBalancedWebClientBuilder")
-    WebClient.Builder loadBalancedWebClientBuilder() {
-        return WebClient.builder();
+    WebClient.Builder loadBalancedWebClientBuilder(ObjectProvider<ObservationRegistry> observationRegistryProvider) {
+        WebClient.Builder builder = WebClient.builder();
+        ObservationRegistry observationRegistry = observationRegistryProvider.getIfAvailable();
+        if (observationRegistry != null) {
+            builder.observationRegistry(observationRegistry);
+        }
+        return builder;
     }
 
     @Bean
