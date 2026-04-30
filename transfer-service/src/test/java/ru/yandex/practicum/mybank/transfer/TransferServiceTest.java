@@ -7,6 +7,7 @@ import ru.yandex.practicum.mybank.common.dto.NotificationRequest;
 import ru.yandex.practicum.mybank.common.dto.TransferRequest;
 import ru.yandex.practicum.mybank.common.kafka.NotificationPublisher;
 import ru.yandex.practicum.mybank.transfer.client.AccountsClient;
+import ru.yandex.practicum.mybank.transfer.service.TransferMetrics;
 import ru.yandex.practicum.mybank.transfer.service.TransferService;
 
 import java.time.LocalDate;
@@ -26,9 +27,10 @@ class TransferServiceTest {
     void transferDelegatesAtomicTransferToAccountsService() {
         AccountsClient accountsClient = mock(AccountsClient.class);
         NotificationPublisher notificationPublisher = mock(NotificationPublisher.class);
+        TransferMetrics transferMetrics = mock(TransferMetrics.class);
         when(accountsClient.transfer("demo", "petrov", 25))
                 .thenReturn(new AccountDetailsDto("demo", "Ivan Ivanov", LocalDate.of(2001, 1, 1), 75));
-        TransferService service = new TransferService(accountsClient, notificationPublisher);
+        TransferService service = new TransferService(accountsClient, notificationPublisher, transferMetrics);
 
         var result = service.transfer("demo", new TransferRequest("petrov", 25));
         ArgumentCaptor<NotificationRequest> notificationCaptor = ArgumentCaptor.forClass(NotificationRequest.class);
@@ -45,9 +47,10 @@ class TransferServiceTest {
     void transferDoesNotSendNotificationsWhenAccountsServiceFails() {
         AccountsClient accountsClient = mock(AccountsClient.class);
         NotificationPublisher notificationPublisher = mock(NotificationPublisher.class);
+        TransferMetrics transferMetrics = mock(TransferMetrics.class);
         RuntimeException failure = new RuntimeException("transfer failed");
         when(accountsClient.transfer("demo", "petrov", 25)).thenThrow(failure);
-        TransferService service = new TransferService(accountsClient, notificationPublisher);
+        TransferService service = new TransferService(accountsClient, notificationPublisher, transferMetrics);
 
         assertThatThrownBy(() -> service.transfer("demo", new TransferRequest("petrov", 25)))
                 .isSameAs(failure);

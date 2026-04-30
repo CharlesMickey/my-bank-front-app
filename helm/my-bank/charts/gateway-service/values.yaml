@@ -16,6 +16,9 @@ config:
   cashUrl: "http://cash-service:8082"
   transferUrl: "http://transfer-service:8083"
   jwkSetUri: "http://keycloak:8080/realms/my-bank/protocol/openid-connect/certs"
+  zipkinEndpoint: "http://zipkin:9411/api/v2/spans"
+  logstashHost: "logstash"
+  logstashPort: "5000"
 
 probes:
   readiness:

@@ -2,6 +2,7 @@ package ru.yandex.practicum.mybank.notifications;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.mybank.common.dto.NotificationRequest;
 import ru.yandex.practicum.mybank.notifications.service.NotificationService;
@@ -13,9 +14,9 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.datasource.username=sa",
         "spring.datasource.password=",
         "spring.flyway.enabled=false",
-        "spring.jpa.hibernate.ddl-auto=create-drop",
-        "spring.main.web-application-type=none"
+        "spring.jpa.hibernate.ddl-auto=create-drop"
 })
+@AutoConfigureObservability
 class NotificationServiceTest {
     @Autowired
     private NotificationService notificationService;

@@ -6,25 +6,32 @@ image:
   pullPolicy: IfNotPresent
 
 service:
-  enabled: false
+  enabled: true
+  port: 8084
 
 config:
+  serverPort: "8084"
   dbUrl: "jdbc:postgresql://notifications-postgres:5432/notifications"
   dbUser: "notifications"
   kafkaBootstrapServers: "kafka:9092"
   notificationsTopic: "bank.notifications"
   consumerGroup: "notifications-service"
+  zipkinEndpoint: "http://zipkin:9411/api/v2/spans"
+  logstashHost: "logstash"
+  logstashPort: "5000"
 
 secret:
   dbPassword: "notifications"
 
 probes:
   readiness:
+    path: "/actuator/health"
     initialDelaySeconds: 15
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 6
   liveness:
+    path: "/actuator/health"
     initialDelaySeconds: 30
     periodSeconds: 20
     timeoutSeconds: 5

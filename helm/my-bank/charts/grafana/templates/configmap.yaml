@@ -1,0 +1,116 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-provisioning
+data:
+  datasource.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        uid: prometheus
+        type: prometheus
+        access: proxy
+        url: {{ .Values.config.prometheusUrl }}
+        isDefault: true
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: my-bank-dashboards
+        orgId: 1
+        folder: My Bank
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards
+  my-bank-observability.json: |
+    {
+      "id": null,
+      "uid": "my-bank-observability",
+      "title": "My Bank Observability",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "15s",
+      "panels": [
+        {
+          "id": 1,
+          "title": "HTTP RPS",
+          "type": "timeseries",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "targets": [{"expr": "sum(rate(http_server_requests_seconds_count[5m])) by (application)", "legendFormat": "{{ "{{application}}" }}"}]
+        },
+        {
+          "id": 2,
+          "title": "HTTP 4xx",
+          "type": "timeseries",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "targets": [{"expr": "sum(rate(http_server_requests_seconds_count{status=~\"4..\"}[5m])) by (application)", "legendFormat": "{{ "{{application}}" }}"}]
+        },
+        {
+          "id": 3,
+          "title": "HTTP 5xx",
+          "type": "timeseries",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "targets": [{"expr": "sum(rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])) by (application)", "legendFormat": "{{ "{{application}}" }}"}]
+        },
+        {
+          "id": 4,
+          "title": "HTTP p95 Latency",
+          "type": "timeseries",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "targets": [{"expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, application))", "legendFormat": "{{ "{{application}}" }}"}]
+        },
+        {
+          "id": 5,
+          "title": "HTTP p99 Latency",
+          "type": "timeseries",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+          "targets": [{"expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, application))", "legendFormat": "{{ "{{application}}" }}"}]
+        },
+        {
+          "id": 6,
+          "title": "JVM Heap Memory",
+          "type": "timeseries",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+          "targets": [{"expr": "sum(jvm_memory_used_bytes{area=\"heap\"}) by (application)", "legendFormat": "{{ "{{application}}" }}"}]
+        },
+        {
+          "id": 7,
+          "title": "Process CPU Usage",
+          "type": "timeseries",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+          "targets": [{"expr": "avg(system_cpu_usage{application!=\"\"}) by (application)", "legendFormat": "{{ "{{application}}" }}"}]
+        },
+        {
+          "id": 8,
+          "title": "Failed Withdrawals",
+          "type": "timeseries",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+          "targets": [{"expr": "sum(bank_cash_withdraw_failures_total) by (login)", "legendFormat": "{{ "{{login}}" }}"}]
+        },
+        {
+          "id": 9,
+          "title": "Failed Transfers",
+          "type": "timeseries",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+          "targets": [{"expr": "sum(bank_transfer_failures_total) by (senderLogin, recipientLogin)", "legendFormat": "{{ "{{senderLogin}}" }} -> {{ "{{recipientLogin}}" }}"}]
+        },
+        {
+          "id": 10,
+          "title": "Failed Notifications",
+          "type": "timeseries",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32},
+          "targets": [{"expr": "sum(bank_notifications_failures_total) by (login)", "legendFormat": "{{ "{{login}}" }}"}]
+        }
+      ]
+    }

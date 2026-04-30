@@ -3,6 +3,7 @@ package ru.yandex.practicum.mybank.cash;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import ru.yandex.practicum.mybank.cash.client.AccountsClient;
+import ru.yandex.practicum.mybank.cash.service.CashMetrics;
 import ru.yandex.practicum.mybank.cash.service.CashService;
 import ru.yandex.practicum.mybank.common.dto.AccountDetailsDto;
 import ru.yandex.practicum.mybank.common.dto.CashAction;
@@ -23,9 +24,10 @@ class CashServiceTest {
     void depositCallsAccountsServiceAndPublishesNotification() {
         AccountsClient accountsClient = mock(AccountsClient.class);
         NotificationPublisher notificationPublisher = mock(NotificationPublisher.class);
+        CashMetrics cashMetrics = mock(CashMetrics.class);
         when(accountsClient.deposit("demo", 50))
                 .thenReturn(new AccountDetailsDto("demo", "Ivan Ivanov", LocalDate.of(2001, 1, 1), 150));
-        CashService cashService = new CashService(accountsClient, notificationPublisher);
+        CashService cashService = new CashService(accountsClient, notificationPublisher, cashMetrics);
 
         var result = cashService.process("demo", new CashRequest(50, CashAction.PUT));
         ArgumentCaptor<NotificationRequest> notificationCaptor = ArgumentCaptor.forClass(NotificationRequest.class);
@@ -41,9 +43,10 @@ class CashServiceTest {
     void withdrawalCallsAccountsServiceAndPublishesNotification() {
         AccountsClient accountsClient = mock(AccountsClient.class);
         NotificationPublisher notificationPublisher = mock(NotificationPublisher.class);
+        CashMetrics cashMetrics = mock(CashMetrics.class);
         when(accountsClient.withdraw("demo", 40))
                 .thenReturn(new AccountDetailsDto("demo", "Ivan Ivanov", LocalDate.of(2001, 1, 1), 60));
-        CashService cashService = new CashService(accountsClient, notificationPublisher);
+        CashService cashService = new CashService(accountsClient, notificationPublisher, cashMetrics);
 
         var result = cashService.process("demo", new CashRequest(40, CashAction.GET));
         ArgumentCaptor<NotificationRequest> notificationCaptor = ArgumentCaptor.forClass(NotificationRequest.class);

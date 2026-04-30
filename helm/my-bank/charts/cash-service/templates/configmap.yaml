@@ -10,3 +10,6 @@ data:
   CASH_CLIENT_ID: {{ .Values.config.clientId | quote }}
   BANK_KAFKA_BOOTSTRAP_SERVERS: {{ .Values.config.kafkaBootstrapServers | quote }}
   BANK_NOTIFICATIONS_TOPIC: {{ .Values.config.notificationsTopic | quote }}
+  BANK_ZIPKIN_ENDPOINT: {{ .Values.config.zipkinEndpoint | quote }}
+  BANK_LOGSTASH_HOST: {{ .Values.config.logstashHost | quote }}
+  BANK_LOGSTASH_PORT: {{ .Values.config.logstashPort | quote }}

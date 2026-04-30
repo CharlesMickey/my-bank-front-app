@@ -1,0 +1,23 @@
+replicaCount: 1
+
+image:
+  repository: docker.elastic.co/logstash/logstash
+  tag: "8.15.2"
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  inputPort: 5000
+  nodePort: 30095
+  apiPort: 9600
+
+config:
+  elasticsearchUrl: "http://elasticsearch:9200"
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "512Mi"
+  limits:
+    cpu: "750m"
+    memory: "1Gi"

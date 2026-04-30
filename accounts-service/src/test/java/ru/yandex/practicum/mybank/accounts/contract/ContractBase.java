@@ -2,6 +2,7 @@ package ru.yandex.practicum.mybank.accounts.contract;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.when;
         "spring.flyway.enabled=false",
         "spring.jpa.hibernate.ddl-auto=create-drop"
 })
+@AutoConfigureObservability
 @AutoConfigureMockMvc
 public abstract class ContractBase {
     @Autowired

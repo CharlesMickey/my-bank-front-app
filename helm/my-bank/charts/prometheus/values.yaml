@@ -1,0 +1,30 @@
+replicaCount: 1
+
+image:
+  repository: prom/prometheus
+  tag: v3.2.1
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 9090
+  nodePort: 30091
+
+config:
+  scrapeInterval: 15s
+  frontUiTarget: "host.docker.internal:8080"
+
+alerts:
+  http5xxRateThreshold: "0.05"
+  failedWithdrawalsIncreaseThreshold: "1"
+  failedTransfersIncreaseThreshold: "1"
+  notificationFailuresIncreaseThreshold: "1"
+  httpLatencyP95ThresholdSeconds: "1.5"
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"

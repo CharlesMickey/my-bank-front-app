@@ -8,3 +8,6 @@ data:
   BANK_CASH_URL: {{ .Values.config.cashUrl | quote }}
   BANK_TRANSFER_URL: {{ .Values.config.transferUrl | quote }}
   BANK_JWK_SET_URI: {{ .Values.config.jwkSetUri | quote }}
+  BANK_ZIPKIN_ENDPOINT: {{ .Values.config.zipkinEndpoint | quote }}
+  BANK_LOGSTASH_HOST: {{ .Values.config.logstashHost | quote }}
+  BANK_LOGSTASH_PORT: {{ .Values.config.logstashPort | quote }}

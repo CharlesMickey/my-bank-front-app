@@ -1,0 +1,23 @@
+replicaCount: 1
+
+image:
+  repository: docker.elastic.co/kibana/kibana
+  tag: "8.15.2"
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 5601
+  nodePort: 30092
+
+config:
+  elasticsearchHosts: "http://elasticsearch:9200"
+  publicBaseUrl: "http://localhost:30092"
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "512Mi"
+  limits:
+    cpu: "500m"
+    memory: "768Mi"
